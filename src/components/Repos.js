@@ -5,66 +5,58 @@ import { ExampleChart, Pie3D, Column3D, Bar3D, Doughnut2D } from "./Charts";
 const Repos = () => {
   const { repos } = React.useContext(GithubContext);
   let languages = repos.reduce((total, item) => {
-    const { language } = item;
+    const { language, stargazers_count } = item;
     if (!language) return total;
     if (!total[language]) {
-      total[language] = { label: language, value: 1 };
+      total[language] = { label: language, value: 1, stars: stargazers_count };
     } else {
       total[language] = {
         ...total[language],
         value: total[language].value + 1,
+        stars: total[language].stars + stargazers_count,
       };
     }
     return total;
   }, {});
-  languages = Object.values(languages)
+  const mostUsed = Object.values(languages)
     .sort((a, b) => {
       return b.value - a.value;
     })
     .slice(0, 5);
-  console.log(languages);
 
-  const chartData = [
-    {
-      label: "Venezuela",
-      value: "290",
+  //most stars per language
+  const mostPopular = Object.values(languages)
+    .sort((a, b) => {
+      return b.stars - a.stars;
+    }) //as value is porperty is only handles stars are copied to value.
+    .map((item) => {
+      return { ...item, value: item.stars || 1 };
+    })
+    .slice(0, 5);
+
+  //stars,forks
+  let { stars, forks } = repos.reduce(
+    (total, item) => {
+      const { stargazers_count, name, forks } = item;
+      total.stars[stargazers_count] = { label: name, value: stargazers_count };
+      total.forks[forks] = { label: name, value: forks };
+      return total;
     },
     {
-      label: "Saudi",
-      value: "260",
-    },
-    {
-      label: "Canada",
-      value: "180",
-    },
-    {
-      label: "Iran",
-      value: "140",
-    },
-    {
-      label: "Russia",
-      value: "115",
-    },
-    {
-      label: "UAE",
-      value: "100",
-    },
-    {
-      label: "US",
-      value: "30",
-    },
-    {
-      label: "China",
-      value: "30",
-    },
-  ];
+      stars: {},
+      forks: {},
+    }
+  );
+  stars = Object.values(stars).slice(-5).reverse();
+  forks = Object.values(forks).slice(-5).reverse();
 
   return (
     <section className="section">
       <Wrapper className="section-center">
-        <Pie3D data={languages}></Pie3D>
-        <div></div>
-        <Doughnut2D data={languages}></Doughnut2D>
+        <Pie3D data={mostUsed}></Pie3D>
+        <Column3D data={stars}></Column3D>
+        <Doughnut2D data={mostPopular}></Doughnut2D>
+        <Bar3D data={forks}></Bar3D>
         {/* <ExampleChart data={chartData}></ExampleChart> */}
       </Wrapper>
     </section>

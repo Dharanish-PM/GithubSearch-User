@@ -37,7 +37,6 @@ const UserInfo = () => {
       color: "yellow",
     },
   ];
-  console.log(items);
 
   return (
     <section className="section">
